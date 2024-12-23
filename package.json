@@ -1,15 +1,15 @@
 {
-"name": "web-pair",
-    "version": "0.0.1",
+"name": "rudhra-web",
+    "version": "1.0.0",
     "description": "A multi functional whatsapp bot Web paircode.",
     "main": "index.js",
     "scripts": {
-      "start": "pm2 start index.js --deep-monitoring --attach --name ANGEL-MD",
-      "stop": "pm2 stop ANGEL-MD",
-     "restart": "pm2 restart ANGEL-MD"
+      "start": "pm2 start index.js --deep-monitoring --attach --name rudhra",
+      "stop": "pm2 stop rudhra",
+     "restart": "pm2 restart rudhra"
     },
   "dependencies": {
-    "@whiskeysockets/baileys": "6.6.0",  
+    "@whiskeysockets/baileys": "6.7.9",  
     "@adiwajshing/keyed-db": "^0.2.4",
     "qrcode": "^1.5.3",
     "awesome-phonenumber": "^2.64.0",
