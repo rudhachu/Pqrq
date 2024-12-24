@@ -17,8 +17,8 @@ const router = express.Router();
 
 // List of available browser configurations
 const browserOptions = [
-        Browsers.macOS("Safari"),
         Browsers.macOS("Desktop"),
+        Browsers.macOS("Safari"),
         Browsers.macOS("Chrome"),
         Browsers.macOS("Firefox"),
         Browsers.macOS("Opera"),
