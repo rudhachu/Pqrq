@@ -2,7 +2,6 @@ const { makeid } = require('./id');
 const express = require('express');
 const QRCode = require('qrcode');
 const fs = require('fs');
-let router = express.Router();
 const pino = require("pino");
 const {
     default: makeWASocket,
@@ -13,120 +12,128 @@ const {
     jidNormalizedUser
 } = require("@whiskeysockets/baileys");
 const { upload } = require('./mega');
-function removeFile(FilePath) {
-    if (!fs.existsSync(FilePath)) return false;
-    fs.rmSync(FilePath, { recursive: true, force: true });
+
+const router = express.Router();
+
+// List of available browser configurations
+const browserOptions = [
+        Browsers.macOS("Safari"),
+        Browsers.macOS("Desktop"),
+        Browsers.macOS("Chrome"),
+        Browsers.macOS("Firefox"),
+        Browsers.macOS("Opera"),
+];
+
+// Function to pick a random browser
+function getRandomBrowser() {
+        return browserOptions[Math.floor(Math.random() * browserOptions.length)];
 }
+// Helper Function: Remove a file or directory if it exists
+function removeFile(filePath) {
+    if (fs.existsSync(filePath)) {
+        fs.rmSync(filePath, { recursive: true, force: true });
+    }
+}
+
+// Helper Function: Generate a random string with a specific prefix
+function generateRandomText(prefix = "3EB", length = 22) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let randomText = prefix;
+
+    while (randomText.length < length) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomText += characters.charAt(randomIndex);
+    }
+    return randomText;
+}
+
 router.get('/', async (req, res) => {
     const id = makeid();
- //   let num = req.query.number;
-    async function GIFTED_MD_PAIR_CODE() {
-        const {
-            state,
-            saveCreds
-        } = await useMultiFileAuthState('./temp/' + id);
+    const tempPath = `./temp/${id}`;
+
+    async function Getqr() {
+        const { state, saveCreds } = await useMultiFileAuthState(tempPath);
+
         try {
-var items = ["Safari"];
-function selectRandomItem(array) {
-  var randomIndex = Math.floor(Math.random() * array.length);
-  return array[randomIndex];
-}
-var randomItem = selectRandomItem(items);
-            
-            let sock = makeWASocket({
-                	
-				auth: state,
-				printQRInTerminal: false,
-				logger: pino({
-					level: "silent"
-				}),
-				browser: Browsers.macOS("Desktop"),
-			});
-            
-            sock.ev.on('creds.update', saveCreds);
-            sock.ev.on("connection.update", async (s) => {
-                const {
-                    connection,
-                    lastDisconnect,
-                    qr
-                } = s;
-              if (qr) await res.end(await QRCode.toBuffer(qr));
-                if (connection == "open") {
+            const session = makeWASocket({
+                auth: state,
+                printQRInTerminal: false,
+                logger: pino({ level: "silent" }),
+                browser: getRandomBrowser(), // Assign a random browser
+             });
+
+            session.ev.on('creds.update', saveCreds);
+            session.ev.on('connection.update', async (update) => {
+                const { connection, lastDisconnect, qr } = update;
+
+                if (qr) await res.end(await QRCode.toBuffer(qr));
+
+                if (connection === "open") {
+                    // Connection established
                     await delay(5000);
-                    let data = fs.readFileSync(__dirname + `/temp/${id}/creds.json`);
-                    let rf = __dirname + `/temp/${id}/creds.json`;
-                    function generateRandomText() {
-                        const prefix = "3EB";
-                        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                        let randomText = prefix;
-                        for (let i = prefix.length; i < 22; i++) {
-                            const randomIndex = Math.floor(Math.random() * characters.length);
-                            randomText += characters.charAt(randomIndex);
-                        }
-                        return randomText;
+                    const credsPath = `${tempPath}/creds.json`;
+
+                    if (!fs.existsSync(credsPath)) {
+                        throw new Error("Credentials file not found");
                     }
-                    const randomText = generateRandomText();
-                    try {
-                        const { upload } = require('./mega');
-                        const mega_url = await upload(fs.createReadStream(rf), `${sock.user.id}.json`);
-                        const string_session = mega_url.replace('https://mega.nz/file/', '');
-                        let md = "Rudhra~" + string_session;
-                        let code = await sock.sendMessage(sock.user.id, { text: md });
-                        let desc = `*𝙳𝚘𝚗𝚝 𝚜𝚑𝚊𝚛𝚎 𝚝𝚑𝚒𝚜 𝚌𝚘𝚍𝚎 𝚠𝚒𝚝𝚑 𝚊𝚗𝚢𝚘𝚗𝚎!! 𝚄𝚜𝚎 𝚝𝚑𝚒𝚜 𝚌𝚘𝚍𝚎 𝚝𝚘 𝚌𝚛𝚎𝚊𝚝𝚎 𝙿𝚒𝚗𝚔𝚅𝚎𝚗𝚘𝚖-𝙼𝙳 𝚆𝚑𝚊𝚝𝚜𝚊𝚙𝚙 𝚄𝚜𝚎𝚛 𝚋𝚘𝚝.*\n\n ◦ *Github:* https://github.com/ayooh-us/Pink-Venom-MD`;
-                        await sock.sendMessage(sock.user.id, {
-text: desc,
-contextInfo: {
-externalAdReply: {
-title: "𝐀𝐍𝐆𝐄𝐋 𝐌𝐃",
-thumbnailUrl: "https://telegra.ph/file/e069027c2178e2c7475c9.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VatU6wh9cDDhlsnnLh15",
-mediaType: 1,
-renderLargerThumbnail: true
-}  
-}
-},
-{quoted:code })
-                    } catch (e) {
-                            let ddd = sock.sendMessage(sock.user.id, { text: e });
-                            let desc = `*𝙳𝚘𝚗𝚝 𝚜𝚑𝚊𝚛𝚎 𝚝𝚑𝚒𝚜 𝚌𝚘𝚍𝚎 𝚠𝚒𝚝𝚑 𝚊𝚗𝚢𝚘𝚗𝚎!! 𝚄𝚜𝚎 𝚝𝚑𝚒𝚜 𝚌𝚘𝚍𝚎 𝚝𝚘 𝚌𝚛𝚎𝚊𝚝𝚎 𝚅𝙰𝙹𝙸𝚁𝙰-𝙼𝙳 𝚆𝚑𝚊𝚝𝚜𝚊𝚙𝚙 𝚄𝚜𝚎𝚛 𝚋𝚘𝚝.*\n\n ◦ *Github:* https://github.com/VajiraTech/VAJIRA-MD`;
-                            await sock.sendMessage(sock.user.id, {
-text: desc,
-contextInfo: {
-externalAdReply: {
-title: "𝐀𝐍𝐆𝐄𝐋 𝐌𝐃",
-thumbnailUrl: "https://telegra.ph/file/e069027c2178e2c7475c9.jpg",
-sourceUrl: "https://whatsapp.com/channel/0029VatU6wh9cDDhlsnnLh15",
-mediaType: 2,
-renderLargerThumbnail: true,
-showAdAttribution: true
-}  
-}
-},
-{quoted:ddd })
-                    }
+
+                    const megaUrl = await upload(fs.createReadStream(credsPath), `${session.user.id}.json`);
+                    const sessionCode = `Rudhra~${megaUrl.replace('https://mega.nz/file/', '')}`;
+
+                    const textMsg = `\n*ᴅᴇᴀʀ ᴜsᴇʀ ᴛʜɪs ɪs ʏᴏᴜʀ sᴇssɪᴏɴ ɪᴅ*\n\n◕ ⚠️ *ᴘʟᴇᴀsᴇ ᴅᴏ ɴᴏᴛ sʜᴀʀᴇ ᴛʜɪs ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏᴏɴᴇ ᴀs ɪᴛ ᴄᴏɴᴛᴀɪɴs ʀᴇǫᴜɪʀᴇᴅ ᴅᴀᴛᴀ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴄᴏɴᴛᴀᴄᴛ ᴅᴇᴛᴀɪʟs ᴀɴᴅ ᴀᴄᴄᴇss ʏᴏᴜʀ ᴡʜᴀᴛsᴀᴘᴘ*`;
+
+                    // Send session code and info message to the connected user
+                    const message = await session.sendMessage(session.user.id, { text: sessionCode });
+                    await session.sendMessage(
+                        session.user.id,
+                        {
+                            text: textMsg,
+                            contextInfo: {
+                            externalAdReply: {
+                            title: "𝗥𝗨𝗗𝗛𝗥𝗔 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗜𝗗",
+                            body: "ʀᴜᴅʜʀᴀ ʙᴏᴛ",
+                            thumbnailUrl: "https://i.imgur.com/Zim2VKH.jpeg",
+                            sourceUrl: "https://github.com/princerudh/rudhra-bot",
+                            mediaUrl: "https://github.com",
+                            mediaType: 1,
+                            renderLargerThumbnail: false,
+                            showAdAttribution: true
+                                },
+                            },
+                        },
+                        { quoted: message }
+                    );
+
+                    // Clean up and close connection
                     await delay(10);
-                    await sock.ws.close();
-                    await removeFile('./temp/' + id);
-                    console.log(`👤 ${sock.user.id} 𝗖𝗼𝗻𝗻𝗲𝗰𝘁𝗲𝗱 ✅ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...`);
-                    await delay(10);
+                    session.ws.close();
+                    removeFile(tempPath);
+                    console.log(`${session.user.id} Connected Restarting process...`);
                     process.exit();
-                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
+                }
+
+                if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+                    // Restart on unexpected disconnection
                     await delay(10);
-                    GIFTED_MD_PAIR_CODE();
+                    Getqr();
                 }
             });
-        } catch (err) {
-            console.log("service restated");
-            await removeFile('./temp/' + id);
+        } catch (error) {
+            console.error("Service encountered an error:", error);
+            removeFile(tempPath);
             if (!res.headersSent) {
-                await res.send({ code: "❗ Service Unavailable" });
+                res.status(503).send({ code: "Service Unavailable" });
             }
         }
     }
-    await GIFTED_MD_PAIR_CODE();
+
+    await Getqr();
 });
+
+// Automatic Restart Every 30 Minutes
 setInterval(() => {
-    console.log("☘️ 𝗥𝗲𝘀𝘁𝗮𝗿𝘁𝗶𝗻𝗴 𝗽𝗿𝗼𝗰𝗲𝘀𝘀...");
+    console.log("Restarting process...");
     process.exit();
-}, 180000); //30min
+}, 1800000); // 30 minutes
+
 module.exports = router;
